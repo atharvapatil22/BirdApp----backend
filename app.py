@@ -2,15 +2,24 @@ import os
 from flask import Flask, jsonify,request 
 from werkzeug.utils import secure_filename
 
+from torch import *
+# from torch.utils.data import Dataset, DataLoader
+import torchvision
+from torchvision import *
+import torchvision.models as models
+import torch.nn as nn
+import torch.optim as optim
+from PIL import Image
+
 app = Flask(__name__)
 
 # GLOBAL VARIABLES:
 app.config['UPLOAD_FOLDER'] = './Uploads'
 birds = ('BLACK-HEADED IBIS', 'COMMON HAWK-CUCKOO', 'COMMON WOOD PIGEON', 'COPPERSMITH BARBET', 'GREAT INDIAN BUSTARD', 'GREATER COUCAL', 'GREATER FLAMINGO', 'GREEN BEE EATER', 'GREY-FRONTED GREEN PIGEON', 'INDIAN PEAFOWL', 'PAINTED STORK', 'ROCK DOVE', 'SPECKLED WOOD PIGEON', 'WHITE RUMPED VULTURE')
 CLASS_LABELS = 15
-# torch.manual_seed(2022)
-# device = 'cpu'
-# torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+torch.manual_seed(2022)
+device = 'cpu'
+torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # # Download the model
 # model_t_s = models.inception_v3(pretrained=True)
