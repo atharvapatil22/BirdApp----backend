@@ -21,36 +21,37 @@ torch.manual_seed(2022)
 device = 'cpu'
 torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# # Download the model
-# model_t_s = models.inception_v3(pretrained=True)
-# # Update the fcc
-# model_t_s.fc = nn.Sequential(
-# nn.Linear(model_t_s.fc.in_features, 1024),
-# nn.Linear(1024, CLASS_LABELS)
-# )
-# # Load the learned weights
-# model_t_s.eval()
-# model_t_s.load_state_dict(torch.load('./inception_model.pt', map_location=torch.device('cpu')))
-# model_t_s.eval()
-# # Send to GPU
-# model_t_s.to(device)
+# Download the model
+model_t_s = models.inception_v3(pretrained=True)
+# Update the fcc
+model_t_s.fc = nn.Sequential(
+nn.Linear(model_t_s.fc.in_features, 1024),
+nn.Linear(1024, CLASS_LABELS)
+)
+# Load the learned weights
+model_t_s.eval()
+model_t_s.load_state_dict(torch.load('./inception_model.pt', map_location=torch.device('cpu')))
+model_t_s.eval()
+# Send to GPU
+model_t_s.to(device)
 
-# def pre_processing(filename):
-#   # Prepare the dataset and labels
-#   transform = transforms.Compose([transforms.Resize((299, 299)),transforms.RandomHorizontalFlip(),transforms.ToTensor(),transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),])
+def pre_processing(filename):
+  # Prepare the dataset and labels
+  transform = transforms.Compose([transforms.Resize((299, 299)),transforms.RandomHorizontalFlip(),transforms.ToTensor(),transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),])
 
-#   # Load image
-#   image = Image.open("./Uploads/"+filename)
+  # Load image
+  image = Image.open("./Uploads/"+filename)
 
-#   # Apply tranformations, move to device and unsqueeze to insert a dimension of size one at position 0 eg: [3,224,224] -> [1,3,224,224]
-#   image = transform(image).unsqueeze(0)
-#   # Predict the image
-#   output = model_t_s(image)
-#   # Move the output to cpu, change to numpy array and get the index having max value
-#   index = output.data.numpy().argmax()
-#   # Get the label
-#   pred = birds[index]
-#   print(pred)
+  # Apply tranformations, move to device and unsqueeze to insert a dimension of size one at position 0 eg: [3,224,224] -> [1,3,224,224]
+  image = transform(image).unsqueeze(0)
+  # Predict the image
+  output = model_t_s(image)
+  # Move the output to cpu, change to numpy array and get the index having max value
+  index = output.data.numpy().argmax()
+  # Get the label
+  pred = birds[index]
+  print(pred)
+  return pred
 
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
@@ -65,6 +66,9 @@ def index():
 @app.route('/predict',methods=['POST'])
 def post():
   # Check if post request has a file part
+
+  # print(dict(request.form))
+  # print(dict(request.files))
   if 'file' not in request.files: 
     response = jsonify({'message': "No file part in the request"})
     response.status_code = 400
@@ -79,8 +83,8 @@ def post():
   if file and allowed_file(file.filename):
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-    # pre_processing(filename)
-    response = jsonify({'message': 'File successfully uploaded'})
+    pred = pre_processing(filename)
+    response = jsonify({'prediction': pred})
     response.status_code = 201
     return response
   else:
