@@ -38,24 +38,6 @@ model_t_s.eval()
 # Send to GPU
 model_t_s.to(device)
 
-def pre_processing(filename):
-  # Prepare the dataset and labels
-  transform = transforms.Compose([transforms.Resize((299, 299)),transforms.RandomHorizontalFlip(),transforms.ToTensor(),transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),])
-
-  # Load image
-  image = Image.open("./Uploads/"+filename)
-
-  # Apply tranformations, move to device and unsqueeze to insert a dimension of size one at position 0 eg: [3,224,224] -> [1,3,224,224]
-  image = transform(image).unsqueeze(0)
-  # Predict the image
-  output = model_t_s(image)
-  # Move the output to cpu, change to numpy array and get the index having max value
-  index = output.data.numpy().argmax()
-  # Get the label
-  pred = birds[index]
-  print(pred)
-  return pred
-
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 def allowed_file(filename):
@@ -84,27 +66,37 @@ def post():
     return response
   
   if file and allowed_file(file.filename):
-    # convert image
     filename = secure_filename(file.filename)
-    # converted_string = base64.b64encode(file.read())
+    img = Image.open(file)
 
-    # get pred
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-    pred = pre_processing(filename)
+    # Prepare the dataset and labels
+    transform = transforms.Compose([transforms.Resize((299, 299)),transforms.RandomHorizontalFlip(),transforms.ToTensor(),transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),])
+
+    # Apply tranformations, move to device and unsqueeze to insert a dimension of size one at position 0 eg: [3,224,224] -> [1,3,224,224]
+    image = transform(img).unsqueeze(0)
+    # Predict the image
+    output = model_t_s(image)
+    # Move the output to cpu, change to numpy array and get the index having max value
+    index = output.data.numpy().argmax()
+    # Get the label
+    pred = birds[index]
+    print(pred)
     response = jsonify({'prediction': pred})
+    response.status_code = 201
+    return response
+    # OLD CODE TO SAVE IN UPLOADS
+    # file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+    # pred = pre_processing(filename)
 
-    # # connect to DB
+
+    # OLD CODE TO SAVE IN DB
+    # converted_string = base64.b64encode(file.read())
     # connection = psycopg2.connect(user="qostkcboaonzuv",password="8e5c2b15ffab4b95056913b8756721c4c28266a104d04e0c188da1d3df6fec4a",host="ec2-44-194-117-205.compute-1.amazonaws.com",port="5432",database="dcferq0mj933p3") 
     # cursor = connection.cursor()
-
-    # # Save file in DB
     # cursor.execute("INSERT INTO images(id,imgname, img) VALUES (DEFAULT,%s,%s) RETURNING id", (filename, converted_string))
     # returned_id = cursor.fetchone()[0]
     # connection.commit()
-    # print("Stored {0} into DB record {1}".format(filename, returned_id))
-
-    response.status_code = 201
-    return response
+    # print("Stored {0} into DB record {1}".format(filename, returned_id))    
   else:
     response = jsonify({"message": "Allowed filetypes are "+ " ".join(ALLOWED_EXTENSIONS)})
     response.status_code = 400
