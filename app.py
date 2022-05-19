@@ -67,8 +67,8 @@ def index():
 def post():
   # Check if post request has a file part
 
+  print(dict(request.files))
   # print(dict(request.form))
-  # print(dict(request.files))
   if 'file' not in request.files: 
     response = jsonify({'message': "No file part in the request"})
     response.status_code = 400
