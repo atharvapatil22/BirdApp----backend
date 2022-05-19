@@ -66,7 +66,7 @@ def post():
     return response
   
   if file and allowed_file(file.filename):
-    filename = secure_filename(file.filename)
+    # filename = secure_filename(file.filename)
     img = Image.open(file)
 
     # Prepare the dataset and labels
