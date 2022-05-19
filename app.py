@@ -10,6 +10,9 @@ import torchvision.models as models
 import torch.nn as nn
 import torch.optim as optim
 from PIL import Image
+import psycopg2
+from psycopg2 import Error
+import base64
 
 app = Flask(__name__)
 
@@ -81,10 +84,25 @@ def post():
     return response
   
   if file and allowed_file(file.filename):
+    # convert image
     filename = secure_filename(file.filename)
+    # converted_string = base64.b64encode(file.read())
+
+    # get pred
     file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
     pred = pre_processing(filename)
     response = jsonify({'prediction': pred})
+
+    # # connect to DB
+    # connection = psycopg2.connect(user="qostkcboaonzuv",password="8e5c2b15ffab4b95056913b8756721c4c28266a104d04e0c188da1d3df6fec4a",host="ec2-44-194-117-205.compute-1.amazonaws.com",port="5432",database="dcferq0mj933p3") 
+    # cursor = connection.cursor()
+
+    # # Save file in DB
+    # cursor.execute("INSERT INTO images(id,imgname, img) VALUES (DEFAULT,%s,%s) RETURNING id", (filename, converted_string))
+    # returned_id = cursor.fetchone()[0]
+    # connection.commit()
+    # print("Stored {0} into DB record {1}".format(filename, returned_id))
+
     response.status_code = 201
     return response
   else:
