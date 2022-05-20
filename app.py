@@ -1,18 +1,18 @@
-import os
+# import os
 from flask import Flask, jsonify,request 
-from werkzeug.utils import secure_filename
+# from werkzeug.utils import secure_filename
 
 from torch import *
 # from torch.utils.data import Dataset, DataLoader
-import torchvision
+# import torchvision
 from torchvision import *
 import torchvision.models as models
 import torch.nn as nn
 import torch.optim as optim
 from PIL import Image
-import psycopg2
-from psycopg2 import Error
-import base64
+# import psycopg2
+# from psycopg2 import Error
+# import base64
 
 app = Flask(__name__)
 
