@@ -13,8 +13,11 @@ from PIL import Image
 # import psycopg2
 # from psycopg2 import Error
 # import base64
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # GLOBAL VARIABLES:
 app.config['UPLOAD_FOLDER'] = './Uploads'
@@ -45,10 +48,12 @@ def allowed_file(filename):
 
 # ROUTES:
 @app.route('/')
+@cross_origin()
 def index():
   return "Server is live ..."
 
 @app.route('/predict',methods=['POST'])
+@cross_origin()
 def post():
   # Check if post request has a file part
 
